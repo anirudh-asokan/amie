@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Function to fetch tasks
+            function fetchTasks() {
+                const query = `{ tasks { id, title, completed } }`;
+                
+                fetch('http://localhost:8000/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const taskList = document.getElementById("task-list");
+                    taskList.innerHTML = "";
+                    data.data.tasks.forEach(task => {
+                        taskList.innerHTML += `<li>${task.title} ${task.completed ? '✅' : '❌'}</li>`;
+                    });
+                });
+            }
+
+            // Fetch tasks initially
+            fetchTasks();
+
+            // Handle form submission
+            document.getElementById("add-task").addEventListener("submit", function (event) {
+                event.preventDefault();
+                const title = document.getElementById("task-title").value;
+
+                const query = `
+                    mutation {
+                        createTask(title: "${title}") {
+                            task {
+                                id
+                                title
+                                completed
+                            }
+                        }
+                    }
+                `;
+
+                fetch('http://localhost:8000/graphql/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    fetchTasks();
+                });
+
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Todo App</h1>
+    <form id="add-task">
+        <input type="text" id="task-title" placeholder="New task...">
+        <button type="submit">Add Task</button>
+    </form>
+    <ul id="task-list">
+        <!-- Tasks will be appended here -->
+    </ul>
+</body>
+
+</html>

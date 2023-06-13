@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: /app/entrypoint.sh
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DEBUG=True # Set this to False in production
+      # Add other environment variables like Django's SECRET_KEY, DEBUG, etc.
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=your_db_name
+      - POSTGRES_USER=your_db_user
+      - POSTGRES_PASSWORD=your_db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  static_server:
+    image: python:3.8-slim-buster
+    volumes:
+      - ./frontend:/frontend
+    command: ["python", "-m", "http.server", "8080", "--directory", "/frontend"]
+    ports:
+      - "8080:8080"
+          
+volumes:
+  postgres_data:
