@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'todo_app',
     'graphene_django',
     'corsheaders',
+    'graphql_jwt',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'amie.urls'
@@ -130,7 +133,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GRAPHENE = {
-    'SCHEMA': 'todo_app.schema.schema'
+    'SCHEMA': 'todo_app.schema.schema',
+    'MIDDLEWARE': [
+        'todo_app.middleware.AdminSpoofMiddleware',
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ]
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -146,3 +153,18 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 AUTH_USER_MODEL = 'todo_app.User'
+
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+GRAPHQL_JWT = {
+    "JWT_SECRET_KEY": SECRET_KEY,
+    "JWT_ALGORITHM": "HS256",
+    'JWT_ALLOW_ARGUMENT': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=60),
+    "JWT_AUTH_HEADER_PREFIX": "JWT",
+}

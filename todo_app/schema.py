@@ -1,6 +1,8 @@
 import graphene
 from graphene_django import DjangoObjectType
 from .models import Task, TaskList, User
+import graphql_jwt
+from django.contrib.auth.hashers import make_password
 
 # Types
 class UserType(DjangoObjectType):
@@ -25,18 +27,30 @@ class Query(graphene.ObjectType):
 
     def resolve_tasks(self, info, completed=None, task_list_id=None, **kwargs):
         # Filter based on whether the tasks are completed or not
-        queryset = Task.objects.all()
+
+        user = info.context.user
+        if not user.is_authenticated:
+            return Task.objects.none()
+
+
+        queryset = Task.objects.filter(user=user)
+
         if completed is not None:
             queryset = queryset.filter(completed=completed)
         if task_list_id is not None:
             queryset = queryset.filter(tasklist_id=task_list_id)
+
         return queryset
 
     def resolve_users(self, info, **kwargs):
         return User.objects.all()
 
     def resolve_task_lists(self, info, **kwargs):
-        return TaskList.objects.all()
+        user = info.context.user
+        if not user.is_authenticated:
+            return Task.objects.none()
+
+        return TaskList.objects.filter(user=user)
 
 # Mutations
 class CreateTaskWithReferences(graphene.Mutation):
@@ -91,10 +105,11 @@ class CreateUser(graphene.Mutation):
     class Arguments:
         email = graphene.String()
         full_name = graphene.String()
-        password_hash = graphene.String()
+        password = graphene.String()
 
-    def mutate(self, info, email, full_name, password_hash):
-        user = User(email=email, full_name=full_name, password_hash=password_hash)
+    def mutate(self, info, email, full_name, password):
+        hashed_password = make_password(password)
+        user = User(email=email, full_name=full_name, password=hashed_password)
         user.save()
         return CreateUser(user=user)
 
@@ -115,6 +130,10 @@ class CreateTaskList(graphene.Mutation):
 
 # Mutation Object
 class Mutation(graphene.ObjectType):
+    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
+
     create_task_with_references = CreateTaskWithReferences.Field()
     update_task = UpdateTask.Field()
     mark_task_done = MarkTaskDone.Field()

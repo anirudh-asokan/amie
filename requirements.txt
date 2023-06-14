@@ -4,4 +4,5 @@ graphql-core==3.2.3
 psycopg2-binary==2.9.1
 gunicorn==20.1.0
 django-cors-headers==3.10.0
+django-graphql-jwt==0.3.4
 
