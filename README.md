@@ -42,11 +42,13 @@ Before you continue, ensure you have the following installed on your system:
    docker-compose up -d
    ```
 
-4. ### Access the Application
-   Open your web browser and go to the following URL to access the frontend of the Amie To-Do App:
+4. ### Access the GraphQL API using Hoppscotch
+   Open your web browser and go to the following URL to access Hoppscotch, an API development environment:
    
    ```
-   http://localhost:8080/index.html
+   https://hoppscotch.io/graphql
    ```
+
+   In Hoppscotch, make queries to `http://localhost:8000/graphql` to interact with the Amie To-Do App's GraphQL API.
 
 You should now have the Amie To-Do App running on your local machine.
