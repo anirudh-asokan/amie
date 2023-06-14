@@ -51,4 +51,4 @@ Before you continue, ensure you have the following installed on your system:
 
    In Hoppscotch, make queries to `http://localhost:8000/graphql` to interact with the Amie To-Do App's GraphQL API.
 
-You should now have the Amie To-Do App running on your local machine.
+You should now have the Amie To-Do App running on your local machine, and you can use Hoppscotch to interact with the GraphQL API.
