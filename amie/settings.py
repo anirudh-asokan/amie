@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'amie.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'your_db_name',
+        'NAME': 'amie_todo_db',
         'USER': 'your_db_user',
         'PASSWORD': 'your_db_password',
         'HOST': 'db',
@@ -144,3 +144,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",  # Allow the static server
     # Add any other origins you want to allow here
 ]
+
+AUTH_USER_MODEL = 'todo_app.User'
