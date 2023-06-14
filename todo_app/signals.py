@@ -2,6 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Task, ThirdPartyIntegration
 from .services import TodoServiceFactory
+# from .tasks import sync_todo_task
 
 @receiver(post_save, sender=Task)
 def sync_task(sender, instance, created, **kwargs):
@@ -16,3 +17,4 @@ def sync_task(sender, instance, created, **kwargs):
 
         # Sync the task
         todo_service.sync_todo(task, created, integration)
+        # sync_todo_task.delay(task, created, integration)

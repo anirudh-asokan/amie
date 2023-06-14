@@ -1,6 +1,11 @@
 # Use the official Python image as a base
 FROM python:3.8-slim-buster
 
+# Update pip
+RUN pip install --upgrade pip
+
+RUN apt-get update && apt-get install -y build-essential libffi-dev
+
 # Set environment variables for Django
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
