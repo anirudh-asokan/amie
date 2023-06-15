@@ -8,3 +8,4 @@ django-cors-headers==3.10.0
 django-graphql-jwt==0.3.4
 celery==5.3.0
 redis==4.5.0
+todoist-api-python==2.0.2

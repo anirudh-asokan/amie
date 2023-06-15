@@ -1,5 +1,5 @@
 # Use the official Python image as a base
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-buster
 
 # Update pip
 RUN pip install --upgrade pip

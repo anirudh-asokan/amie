@@ -1,7 +1,9 @@
 import graphene
-from graphene_django import DjangoObjectType
-from ..models import User
 from django.contrib.auth.hashers import make_password
+from graphene_django import DjangoObjectType
+from django.core.exceptions import PermissionDenied
+from ..models import User
+from ..tasks import query_pull_task
 
 
 class UserType(DjangoObjectType):
@@ -24,7 +26,17 @@ class CreateUser(graphene.Mutation):
         return CreateUser(user=user)
 
 
-def resolve_users(self, info, **kwargs):
-    # We don't support returning users
-    # Remove this block after development
-    return User.objects.all()
+class TodistWebhook(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        pass
+
+    def mutate(self, info):
+        user = info.context.user
+        if not user.is_authenticated:
+            raise PermissionDenied(
+                "You must be authenticated to perform this action.")
+
+        query_pull_task(user)
+        return CreateUser(user=user)

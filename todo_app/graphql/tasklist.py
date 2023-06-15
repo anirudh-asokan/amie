@@ -1,7 +1,7 @@
 import graphene
 import graphql_jwt
 from graphene_django import DjangoObjectType
-from graphene_django.views import HttpError
+from django.core.exceptions import PermissionDenied
 from ..models import Task, TaskList
 
 
@@ -12,11 +12,11 @@ class TaskListType(DjangoObjectType):
     def resolve_tasks(self, info, **kwargs):
         user = info.context.user
         if not user.is_authenticated:
-            raise HttpError.Unauthorized(
+            raise PermissionDenied(
                 "You must be authenticated to perform this action.")
 
         # Order the tasks within each task list by the updated_at field
-        return Task.objects.filter(tasklist=self, user=user).order_by('last_updated')
+        return Task.objects.filter(tasklist=self, user=user, completed=False).order_by('last_updated')
 
 
 class CreateTaskList(graphene.Mutation):
@@ -28,7 +28,7 @@ class CreateTaskList(graphene.Mutation):
     def mutate(self, info, title):
         user = info.context.user
         if not user.is_authenticated:
-            raise HttpError.Unauthorized(
+            raise PermissionDenied(
                 "You must be authenticated to perform this action.")
 
         task_list = TaskList(title=title, user=user)
@@ -39,7 +39,7 @@ class CreateTaskList(graphene.Mutation):
 def resolve_task_lists(self, info, **kwargs):
     user = info.context.user
     if not user.is_authenticated:
-        raise HttpError.Unauthorized(
+        raise PermissionDenied(
             "You must be authenticated to perform this action.")
 
     return TaskList.objects.filter(user=user).prefetch_related('tasks').order_by('-last_updated')

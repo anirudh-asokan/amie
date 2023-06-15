@@ -2,11 +2,14 @@ from .base import TodoService
 
 
 class MicrosoftTodoService(TodoService):
-    label = 'MICROSOFT_TODO'
-    human_readable_name = 'Microsoft To Do'
-
-    def sync_todo(self, todo, created, integration):
+    def push_task(self, task, created, integration):
         pass
 
-    def delete_todo(self, todo):
+    def pull_task(self, integration):
+        pass
+
+    def close_task(self, task, integration):
+        pass
+    
+    def push_task_list(self, task_list, created, integration):
         pass

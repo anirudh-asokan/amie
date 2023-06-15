@@ -1,6 +1,6 @@
 import graphene
 import graphql_jwt
-from .graphql.user import UserType, CreateUser, resolve_users
+from .graphql.user import UserType, CreateUser, TodistWebhook
 from .graphql.task import TaskType, CreateTaskWithReferences, UpdateTask, MarkTaskDone, resolve_tasks
 from .graphql.tasklist import TaskListType, CreateTaskList, resolve_task_lists
 
@@ -12,7 +12,6 @@ class Query(graphene.ObjectType):
     task_lists = graphene.List(TaskListType)
 
     resolve_tasks = resolve_tasks
-    resolve_users = resolve_users
     resolve_task_lists = resolve_task_lists
 
 
@@ -26,6 +25,7 @@ class Mutation(graphene.ObjectType):
     mark_task_done = MarkTaskDone.Field()
     create_user = CreateUser.Field()
     create_task_list = CreateTaskList.Field()
+    todoist_webhook = TodistWebhook.Field()
 
 
 # Schema

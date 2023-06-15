@@ -1,10 +1,9 @@
 import graphene
-import graphql_jwt
 from graphql import GraphQLError
 from graphene_django import DjangoObjectType
-from graphene_django.views import HttpError
 from django.core.exceptions import PermissionDenied
 from ..models import Task, TaskList
+from ..tasks import post_task_close
 
 
 class TaskType(DjangoObjectType):
@@ -22,7 +21,7 @@ class CreateTaskWithReferences(graphene.Mutation):
     def mutate(self, info, title, task_list_id):
         user = info.context.user
         if not user.is_authenticated:
-            raise HttpError.Unauthorized(
+            raise PermissionDenied(
                 "You must be authenticated to perform this action.")
 
         try:
@@ -46,7 +45,7 @@ class UpdateTask(graphene.Mutation):
     def mutate(self, info, task_id, title=None, completed=None):
         user = info.context.user
         if not user.is_authenticated:
-            raise HttpError.Unauthorized(
+            raise PermissionDenied(
                 "You must be authenticated to perform this action.")
 
         try:
@@ -75,7 +74,7 @@ class MarkTaskDone(graphene.Mutation):
     def mutate(self, info, task_id):
         user = info.context.user
         if not user.is_authenticated:
-            raise HttpError.Unauthorized(
+            raise PermissionDenied(
                 "You must be authenticated to perform this action.")
 
         try:
@@ -90,6 +89,8 @@ class MarkTaskDone(graphene.Mutation):
         task.completed = True
         task.save()
 
+        post_task_close(user, task)
+
         return MarkTaskDone(task=task)
 
 
@@ -98,7 +99,7 @@ def resolve_tasks(self, info, completed=None, task_list_id=None, **kwargs):
 
     user = info.context.user
     if not user.is_authenticated:
-        raise HttpError.Unauthorized(
+        raise PermissionDenied(
             "You must be authenticated to perform this action.")
 
     queryset = Task.objects.filter(user=user)

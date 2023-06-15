@@ -163,10 +163,13 @@ GRAPHQL_JWT = {
     "JWT_SECRET_KEY": SECRET_KEY,
     "JWT_ALGORITHM": "HS256",
     'JWT_ALLOW_ARGUMENT': True,
-    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_VERIFY_EXPIRATION': False,
     'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
     "JWT_EXPIRATION_DELTA": timedelta(minutes=60),
     "JWT_AUTH_HEADER_PREFIX": "JWT",
+    'JWT_ALLOW_ANY_CLASSES': [
+        'todo_app.schema.CreateUser',
+    ],
 }
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
@@ -198,5 +201,12 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+    },
+}
+
+CELERY_BEAT_SCHEDULE = {
+    'my-periodic-task': {
+        'task': 'todo_app.tasks.query_pull_task_for_all_users',
+        'schedule': 3600.0,  # Run every 3600 seconds which is equivalent to 1 hour
     },
 }

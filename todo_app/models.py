@@ -1,5 +1,4 @@
 from django.db import models
-from .services import TodoistService, MicrosoftTodoService
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 ##### User-Related Models #####
@@ -48,11 +47,13 @@ class User(AbstractBaseUser):
 
 class TaskList(models.Model):
     title = models.CharField(max_length=100)
-    completed = models.BooleanField(default=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='task_lists')
     last_updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    # Field to store details from third-party apps
+    todoist_id = models.BigIntegerField(null=True)
 
 
 class Task(models.Model):
@@ -65,16 +66,19 @@ class Task(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    # Field to store details from third-party apps
+    todoist_id = models.BigIntegerField(null=True)
+
 
 ##### Third-Party Integration Models #####
 
 class ThirdPartyIntegration(models.Model):
     # Choices for the type of integration
-    TODOIST = TodoistService.label
-    MICROSOFT_TODO = MicrosoftTodoService.label
+    TODOIST = 'TODOIST'
+    MICROSOFT_TODO = 'MICROSOFT_TODO'
     INTEGRATION_CHOICES = [
-        (TodoistService.label, TodoistService.human_readable_name),
-        (MicrosoftTodoService.label, MicrosoftTodoService.human_readable_name),
+        ('TODOIST', 'Todoist'),
+        ('MICROSOFT_TODO', 'Microsoft To Do'),
     ]
 
     # Fields
