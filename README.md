@@ -42,6 +42,11 @@ Before you continue, ensure you have the following installed on your system:
    docker-compose up -d
    ```
 
+   When the Docker containers are running in the background, you can view the logs by running the following command::
+      ```sh
+   docker-compose logs
+   ```
+
 4. ### Access the GraphQL API using Hoppscotch
    Open your web browser and go to the following URL to access Hoppscotch, an API development environment:
    

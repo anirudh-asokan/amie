@@ -28,8 +28,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the current directory to the container
 COPY . /app/
 
-# Copy the entrypoint script
+# Copy the entrypoint scripts
 COPY entrypoint.sh /app/entrypoint.sh
+COPY celery_entrypoint.sh /app/celery_entrypoint.sh
 
-# Set the entrypoint script as the entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Make the scripts executable
+RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/celery_entrypoint.sh

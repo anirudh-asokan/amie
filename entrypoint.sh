@@ -15,4 +15,4 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 
 # Start Gunicorn
-exec gunicorn --bind 0.0.0.0:8000 amie.wsgi
+exec gunicorn --bind 0.0.0.0:8000 amie.wsgi --access-logfile '-' --error-logfile '-'

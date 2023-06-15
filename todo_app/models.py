@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 ##### User-Related Models #####
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, full_name, password=None):
         if not email:
@@ -13,7 +14,8 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-    
+
+
 class User(AbstractBaseUser):
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
@@ -42,15 +44,13 @@ class User(AbstractBaseUser):
         return False
 
 
-
-
-
 ##### Task-Related Models #####
 
 class TaskList(models.Model):
     title = models.CharField(max_length=100)
     completed = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_lists')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='task_lists')
     last_updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -58,13 +58,12 @@ class TaskList(models.Model):
 class Task(models.Model):
     title = models.CharField(max_length=100)
     completed = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
-    tasklist = models.ForeignKey(TaskList, on_delete=models.CASCADE, related_name='tasks')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='tasks')
+    tasklist = models.ForeignKey(
+        TaskList, on_delete=models.CASCADE, related_name='tasks')
     last_updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
-
-
-
 
 
 ##### Third-Party Integration Models #####
@@ -77,10 +76,13 @@ class ThirdPartyIntegration(models.Model):
         (TodoistService.label, TodoistService.human_readable_name),
         (MicrosoftTodoService.label, MicrosoftTodoService.human_readable_name),
     ]
-    
+
     # Fields
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='integrations')
-    integration_type = models.CharField(max_length=20, choices=INTEGRATION_CHOICES)
-    auth_token = models.CharField(max_length=255)  # Store authentication tokens or keys
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='integrations')
+    integration_type = models.CharField(
+        max_length=20, choices=INTEGRATION_CHOICES)
+    # Store authentication tokens or keys
+    auth_token = models.CharField(max_length=255)
     last_updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)

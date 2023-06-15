@@ -17,6 +17,7 @@ services:
       - DEBUG=True # Set this to False in production
       - CELERY_BROKER_URL=redis://redis:6379/0
       # Add other environment variables like Django's SECRET_KEY, DEBUG, etc.
+      - PYTHONUNBUFFERED=1
 
   db:
     image: postgres:13
@@ -35,16 +36,20 @@ services:
     volumes:
       - redis_data:/data
 
-  # celery:
-  #   build: .
-  #   command: celery -A amie worker --loglevel=info
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     - db
-  #     - redis
-  #   environment:
-  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  celery:
+    build: .
+    command: celery -A amie worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    entrypoint: ["/app/celery_entrypoint.sh"]
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DJANGO_SETTINGS_MODULE=amie.settings
 
 volumes:
   postgres_data:
