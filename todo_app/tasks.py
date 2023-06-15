@@ -19,7 +19,7 @@ def sync_todo_task(self, task_id, created, integration_id):
     try:
         # Sync the task
         integration_name = integration.get_integration_type_display()
-        logger.info('Syncing with', integration_name)
+        logger.info(f'Syncing with {integration_name}')
         todo_service.sync_todo(task, created, integration)
     except Exception as e:
         raise self.retry(exc=e)

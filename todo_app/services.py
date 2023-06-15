@@ -1,37 +1,5 @@
-class TodoService:
-    def sync_todo(self, todo, created):
-        raise NotImplementedError
-
-    def delete_todo(self, todo):
-        raise NotImplementedError
-
-
-class TodoistService(TodoService):
-    label = 'TODOIST'
-    human_readable_name = 'Todoist'
-
-    def sync_todo(self, todo, created):
-        if created:
-            # Code to push new todo to Todoist
-            pass
-        else:
-            # Code to update existing todo in Todoist
-            pass
-
-    def delete_todo(self, todo):
-        # Code to delete todo in Todoist
-        pass
-
-
-class MicrosoftTodoService(TodoService):
-    label = 'MICROSOFT_TODO'
-    human_readable_name = 'Microsoft To Do'
-
-    def sync_todo(self, todo, created):
-        pass
-
-    def delete_todo(self, todo):
-        pass
+from .integrations.todoist import TodoistService
+from .integrations.microsoft_todo import MicrosoftTodoService
 
 
 class TodoServiceFactory:
