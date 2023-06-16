@@ -3,7 +3,8 @@ from django.dispatch import receiver
 from .models import Task, TaskList, ThirdPartyIntegration
 from .tasks import push_task, push_task_list
 
-
+# This receiver is triggered whenever a Task object is saved
+# It syncs the task with all the user's third-party integrations
 @receiver(post_save, sender=Task)
 def post_task_save(sender, instance, created, **kwargs):
     task = instance
@@ -16,7 +17,8 @@ def post_task_save(sender, instance, created, **kwargs):
     for integration in user_integrations:
         push_task.delay(task_id, created, integration.id)
 
-
+# This receiver is triggered whenever a TaskList object is saved
+# It syncs the task list with all the user's third-party integrations
 @receiver(post_save, sender=TaskList)
 def post_task_list_save(sender, instance, created, **kwargs):
     task_list = instance

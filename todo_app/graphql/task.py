@@ -3,7 +3,6 @@ from graphql import GraphQLError
 from graphene_django import DjangoObjectType
 from django.core.exceptions import PermissionDenied
 from ..models import Task, TaskList
-from ..tasks import post_task_close
 
 
 class TaskType(DjangoObjectType):
@@ -88,8 +87,6 @@ class MarkTaskDone(graphene.Mutation):
 
         task.completed = True
         task.save()
-
-        post_task_close(user, task)
 
         return MarkTaskDone(task=task)
 

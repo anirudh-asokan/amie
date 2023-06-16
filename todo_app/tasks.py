@@ -7,98 +7,75 @@ from celery import shared_task
 logger = logging.getLogger(__name__)
 
 
+def get_integration_service(integration):
+    return TodoServiceFactory.get_service(
+        integration.integration_type, integration.auth_token, integration.user
+    )
+
+
+def handle_integration_task(integration_id, action_name, action):
+    try:
+        integration = ThirdPartyIntegration.objects.get(pk=integration_id)
+        integration_service = get_integration_service(integration)
+        integration_name = integration.get_integration_type_display()
+        logger.info(f'{action_name} with {integration_name}')
+        action(integration_service)
+    except Exception as e:
+        logger.error(f'Error during {action_name}: {e}')
+
+
 @shared_task(bind=True, max_retries=3)
 def push_task(self, task_id, created, integration_id):
-    # Retrieve the task and integration instances from their IDs
     task = Task.objects.get(pk=task_id)
-    integration = ThirdPartyIntegration.objects.get(pk=integration_id)
-
-    # Get the appropriate service for the integration type
-    integration_service = TodoServiceFactory.get_service(integration.integration_type)
-
-    try:
-        # Push the task
-        integration_name = integration.get_integration_type_display()
-        logger.info(f'Syncing with {integration_name}')
-        integration_service.push_task(task, created, integration)
-    except Exception as e:
-        raise self.retry(exc=e)
+    handle_integration_task(
+        integration_id,
+        'Syncing task',
+        lambda integration_service: integration_service.push_task(
+            task, created)
+    )
 
 
 @shared_task(bind=True, max_retries=3)
 def push_task_list(self, task_list_id, created, integration_id):
-    # Retrieve the task list and integration instances from their IDs
     task_list = TaskList.objects.get(pk=task_list_id)
-    integration = ThirdPartyIntegration.objects.get(pk=integration_id)
-
-    # Get the appropriate service for the integration type
-    integration_service = TodoServiceFactory.get_service(integration.integration_type)
-
-    try:
-        # Push the task list
-        integration_name = integration.get_integration_type_display()
-        logger.info(f'Syncing with {integration_name}')
-        integration_service.push_task_list(task_list, created, integration)
-    except Exception as e:
-        raise self.retry(exc=e)
-
-
-@shared_task(bind=True, max_retries=3)
-def close_task(self, task_id, integration_id):
-    # Retrieve the task and integration instances from their IDs
-    task = Task.objects.get(pk=task_id)
-    integration = ThirdPartyIntegration.objects.get(pk=integration_id)
-
-    # Get the appropriate service for the integration type
-    integration_service = TodoServiceFactory.get_service(integration.integration_type)
-
-    try:
-        # Close task
-        integration_name = integration.get_integration_type_display()
-        logger.info(f'Closing task on {integration_name}')
-        integration_service.close_task(task, integration)
-    except Exception as e:
-        raise self.retry(exc=e)
-
-
-def post_task_close(user, task):
-
-    # Query all integrations associated with the user
-    user_integrations = ThirdPartyIntegration.objects.filter(user=user)
-
-    # Iterate through each integration and sync the task list
-    for integration in user_integrations:
-        close_task.delay(task.id, integration.id)
+    handle_integration_task(
+        integration_id,
+        'Syncing task list',
+        lambda integration_service: integration_service.push_task_list(
+            task_list, created)
+    )
 
 
 @shared_task(bind=True, max_retries=3)
 def pull_task(self, integration_id):
-    # Retrieve the integration instances from their ID
-    integration = ThirdPartyIntegration.objects.get(pk=integration_id)
+    handle_integration_task(
+        integration_id,
+        'Pulling task',
+        lambda integration_service: integration_service.pull_task()
+    )
 
-    # Get the appropriate service for the integration type
-    integration_service = TodoServiceFactory.get_service(integration.integration_type)
-
-    try:
-        # Pull task
-        integration_name = integration.get_integration_type_display()
-        logger.info(f'Pull task from {integration_name}')
-        integration_service.pull_task(integration)
-    except Exception as e:
-        raise self.retry(exc=e)
-    
 
 def query_pull_task(user):
-    # Query all integrations associated with the user
+    """
+    Query all integrations associated with the user and pull tasks from them.
+    This function is idempotent - it can be called multiple times without
+    different side effects.
+    """
     user_integrations = ThirdPartyIntegration.objects.filter(user=user)
-
-    # Iterate through each integration and sync the task list
     for integration in user_integrations:
         pull_task.delay(integration.id)
 
 
-# Run every hour
 @shared_task
 def query_pull_task_for_all_users():
+    """
+    Sync tasks and task lists for all users from third-party integrations.
+
+    This function iterates through all users and synchronizes their tasks and 
+    task lists with the third-party integrations they have added.
+
+    It is meant to be executed periodically and is configured to run every hour
+    via Django settings.
+    """
     for user in User.objects.all():
         query_pull_task(user)
