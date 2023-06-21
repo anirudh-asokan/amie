@@ -9,8 +9,8 @@ class TodoServiceFactory:
     }
 
     @classmethod
-    def get_service(cls, integration_type, *args, **kwargs):
-        service_class = cls.services.get(integration_type)
+    def get_service(cls, third_party_app, *args, **kwargs):
+        service_class = cls.services.get(third_party_app.service_key)
         if not service_class:
-            raise ValueError(f'Unknown integration type: {integration_type}')
+            raise ValueError(f'Unknown integration type: {third_party_app.service_key}')
         return service_class(*args, **kwargs)

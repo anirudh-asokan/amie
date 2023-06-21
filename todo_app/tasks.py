@@ -1,5 +1,8 @@
 import logging
-from .models import User, Task, TaskList, ThirdPartyIntegration
+from .models.activity_models import ActivityHistory
+from .models.integration_models import ThirdPartyAppIntegration
+from .models.task_models import Task, TaskList
+from .models.user_models import User
 from .services import TodoServiceFactory
 from celery import shared_task
 
@@ -9,16 +12,21 @@ logger = logging.getLogger(__name__)
 
 def get_integration_service(integration):
     return TodoServiceFactory.get_service(
-        integration.integration_type, integration.auth_token, integration.user
-    )
+        integration.third_party_app, integration)
 
 
 def handle_integration_task(integration_id, action_name, action):
     try:
-        integration = ThirdPartyIntegration.objects.get(pk=integration_id)
+        integration = ThirdPartyAppIntegration.objects.get(pk=integration_id)
         integration_service = get_integration_service(integration)
-        integration_name = integration.get_integration_type_display()
+        integration_name = integration.third_party_app.name
         logger.info(f'{action_name} with {integration_name}')
+        activity = ActivityHistory(
+            user=integration.user,
+            action=action.__name__,
+            app_integration=integration,
+        )
+        activity.save()
         action(integration_service)
     except Exception as e:
         logger.error(f'Error during {action_name}: {e}')
@@ -61,7 +69,7 @@ def query_pull_task(user):
     This function is idempotent - it can be called multiple times without
     different side effects.
     """
-    user_integrations = ThirdPartyIntegration.objects.filter(user=user)
+    user_integrations = ThirdPartyAppIntegration.objects.filter(user=user)
     for integration in user_integrations:
         pull_task.delay(integration.id)
 

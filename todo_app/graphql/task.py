@@ -2,7 +2,7 @@ import graphene
 from graphql import GraphQLError
 from graphene_django import DjangoObjectType
 from django.core.exceptions import PermissionDenied
-from ..models import Task, TaskList
+from ..models.task_models import Task, TaskList
 
 
 class TaskType(DjangoObjectType):

@@ -3,7 +3,7 @@ from .base import TodoService
 
 class MicrosoftTodoService(TodoService):
 
-    def __init__(self, auth_token, user):
+    def __init__(self, integration):
         pass
 
     def push_task(self, task, created, integration):

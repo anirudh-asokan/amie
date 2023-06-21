@@ -1,8 +1,7 @@
 import graphene
-import graphql_jwt
 from graphene_django import DjangoObjectType
 from django.core.exceptions import PermissionDenied
-from ..models import Task, TaskList
+from ..models.task_models import Task, TaskList
 
 
 class TaskListType(DjangoObjectType):

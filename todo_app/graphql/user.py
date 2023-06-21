@@ -2,7 +2,7 @@ import graphene
 from django.contrib.auth.hashers import make_password
 from graphene_django import DjangoObjectType
 from django.core.exceptions import PermissionDenied
-from ..models import User
+from ..models.user_models import User
 from ..tasks import query_pull_task
 
 
